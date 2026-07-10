@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arm-Tank | Ecossistema Robótico de Baixa Latência</title>
+    <meta
+      name="description"
+      content="Uma apresentação comercial do projeto Arm-Tank, com foco em robótica modular, latência reduzida e controle em tempo real."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <nav class="nav container">
+        <a class="brand" href="#top">Arm-Tank</a>
+        <div class="nav-links">
+          <a href="#diferenciais">Diferenciais</a>
+          <a href="#modulos">Módulos</a>
+          <a href="#como-funciona">Como funciona</a>
+          <a href="#contato">Contato</a>
+        </div>
+      </nav>
+
+      <div class="container hero-grid" id="top">
+        <div class="hero-copy">
+          <p class="eyebrow">Projeto open-source • Robótica embarcada • Controle preciso</p>
+          <h1>Um ecossistema robótico pensado para performance, segurança e demonstração real.</h1>
+          <p class="lead">
+            O Arm-Tank une hardware, firmware e controle em tempo real em um projeto modular que une braço mecânico, garra manipuladora e unidade de tração com foco em baixa latência e estabilidade.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#modulos">Explorar o projeto</a>
+            <a class="btn btn-secondary" href="#contato">Quero conhecer mais</a>
+          </div>
+          <ul class="hero-points">
+            <li>Latência otimizada para controle em tempo real</li>
+            <li>Arquitetura modular e escalável</li>
+            <li>Ideal para demonstrações, laboratório e pesquisa</li>
+          </ul>
+        </div>
+
+        <div class="hero-card">
+          <div class="chip">Status • Em desenvolvimento</div>
+          <h3>O que torna o projeto especial</h3>
+          <div class="stats-grid">
+            <div>
+              <strong>3</strong>
+              <span>camadas de controle</span>
+            </div>
+            <div>
+              <strong>&lt;20ms</strong>
+              <span>latência alvo</span>
+            </div>
+            <div>
+              <strong>ESP32</strong>
+              <span>e Arduino</span>
+            </div>
+            <div>
+              <strong>Open Source</strong>
+              <span>em evolução</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="section container" id="diferenciais">
+        <div class="section-heading">
+          <p class="eyebrow">Por que esse projeto chama atenção</p>
+          <h2>Mais do que um protótipo: uma base para inovação e apresentação técnica.</h2>
+        </div>
+        <div id="features-grid" class="cards-grid"></div>
+      </section>
+
+      <section class="section section-alt" id="modulos">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow">Ecossistema modular</p>
+            <h2>Os blocos que compõem a experiência completa do Arm-Tank.</h2>
+          </div>
+          <div id="modules-grid" class="cards-grid"></div>
+        </div>
+      </section>
+
+      <section class="section container" id="como-funciona">
+        <div class="section-heading">
+          <p class="eyebrow">Fluxo do projeto</p>
+          <h2>Da interação humana à ação física, tudo é pensado para responder com precisão.</h2>
+        </div>
+        <div class="timeline">
+          <article>
+            <h3>1. Interface humana</h3>
+            <p>O controle remoto captura entradas e transforma movimento em comandos estáveis.</p>
+          </article>
+          <article>
+            <h3>2. Cérebro do sistema</h3>
+            <p>O coração do projeto processa as decisões, compensa deslocamentos e organiza o fluxo.</p>
+          </article>
+          <article>
+            <h3>3. Execução mecânica</h3>
+            <p>Servos, motores e tração respondem com ação física, fechando o ciclo em tempo real.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section section-cta" id="contato">
+        <div class="container cta-box">
+          <h2>Quer apresentar esse projeto de forma mais profissional?</h2>
+          <p>Esta página é uma primeira versão do kit de vendas para mostrar o valor técnico e a proposta do Arm-Tank para investidores, parceiros ou público interessado.</p>
+          <a class="btn btn-primary" href="https://github.com/IvanM1999/arm-tank-arduino" target="_blank" rel="noreferrer">Abrir repositório</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-content">
+        <p>Arm-Tank • Desenvolvido com foco em robótica embarcada e demonstração técnica.</p>
+        <p>© <span id="year"></span> DestinyServicesBR</p>
+      </div>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
