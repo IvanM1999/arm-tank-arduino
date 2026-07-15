@@ -1,3 +1,131 @@
-<div>
-    <h1>Módulo E (AND)</h1>
+<div class="module-container" id="modulo-e-container">
+    <div class="module-header">
+        <h2>Lógica E (AND) — Jornada de Aprendizado</h2>
+        <p>Complete cada etapa para expandir sua visão sobre a lógica.</p>
+    </div>
+
+    <div class="logic-timeline" id="timeline-e">
+        
+        <div class="logic-card active" id="step-tabela">
+            <h3>1. Tabela Verdade</h3>
+            <p class="instruction">Observe as combinações de entrada (A e B) e sua saída.</p>
+            <table class="interactive-table">
+                <thead>
+                    <tr><th>A</th><th>B</th><th>Saída</th></tr>
+                </thead>
+                <tbody>
+                    <tr id="row-0-0"><td>0</td><td>0</td><td class="res">0</td></tr>
+                    <tr id="row-0-1"><td>0</td><td>1</td><td class="res">0</td></tr>
+                    <tr id="row-1-0"><td>1</td><td>0</td><td class="res">0</td></tr>
+                    <tr id="row-1-1"><td>1</td><td>1</td><td class="res-true">1</td></tr>
+                </tbody>
+            </table>
+            <button class="next-step-btn" onclick="advanceStep('tabela', 'booleana')">Entendi, próximo ➔</button>
+        </div>
+
+        <div class="logic-card locked" id="step-booleana">
+            <h3>2. Lógica Booleana</h3>
+            <p class="instruction">A multiplicação booleana representa a conjunção "E".</p>
+            <div class="formula-box">
+                <p class="booleana-expr">S = A . B</p>
+            </div>
+            <button class="next-step-btn" onclick="advanceStep('booleana', 'matematica')">Avançar para Matemática ➔</button>
+        </div>
+
+        <div class="logic-card locked" id="step-matematica">
+            <h3>3. Matemática (Conjuntos)</h3>
+            <p class="instruction">Na teoria dos conjuntos, equivale à Intersecção.</p>
+            <div class="formula-box">
+                <p class="math-expr">A ∩ B</p>
+            </div>
+            <button class="next-step-btn" onclick="advanceStep('matematica', 'analogico')">Ver na Prática (Botões) ➔</button>
+        </div>
+
+        <div class="logic-card locked" id="step-analogico">
+            <h3>4. Circuito de Botões</h3>
+            <p class="instruction">Ligue ambos os interruptores em série para acender o LED.</p>
+            <div class="circuit-visual">
+                <button id="switch-a" class="switch-btn">A (Off)</button>
+                <span class="wire">══</span>
+                <button id="switch-b" class="switch-btn">B (Off)</button>
+                <span class="wire">══</span>
+                <div id="led-indicator" class="led off">💡 LED</div>
+            </div>
+            <button class="next-step-btn" onclick="advanceStep('analogico', 'digital')">Ver em Bits Digitais ➔</button>
+        </div>
+
+        <div class="logic-card locked" id="step-digital">
+            <h3>5. Algoritmo e Bits</h3>
+            <p class="instruction">Em código de máquina e linguagens de alto nível.</p>
+            <pre><code>let A = true;
+let B = true;
+let S = A && B; // true</code></pre>
+            <button class="finish-btn" onclick="finishModule()">Concluir Módulo! 🎉</button>
+        </div>
+
+    </div>
 </div>
+
+<script>
+// Função executada pelo roteador principal ao carregar o módulo
+function setupLogicE() {
+    window.advanceStep = function(currentId, nextId) {
+        const currentCard = document.getElementById(`step-${currentId}`);
+        const nextCard = document.getElementById(`step-${nextId}`);
+        
+        if (currentCard && nextCard) {
+            // Transiciona o atual para miniatura à esquerda
+            currentCard.classList.remove('active');
+            currentCard.classList.add('mini');
+            
+            // Ativa o próximo card, removendo o bloqueio
+            nextCard.classList.remove('locked');
+            nextCard.classList.add('active');
+            
+            // Faz scroll suave horizontal para focar no novo card ativo
+            nextCard.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
+    };
+
+    // --- Sistema de Botões Físicos / LED Integrado (Passo 4) ---
+    const btnA = document.getElementById('switch-a');
+    const btnB = document.getElementById('switch-b');
+    const led = document.getElementById('led-indicator');
+    
+    let stateA = false;
+    let stateB = false;
+
+    function updateSystem() {
+        btnA.textContent = `A (${stateA ? 'ON' : 'OFF'})`;
+        btnA.classList.toggle('active-btn', stateA);
+        
+        btnB.textContent = `B (${stateB ? 'ON' : 'OFF'})`;
+        btnB.classList.toggle('active-btn', stateB);
+
+        const output = stateA && stateB;
+
+        if (output) {
+            led.classList.remove('off');
+            led.classList.add('on');
+        } else {
+            led.classList.remove('on');
+            led.classList.add('off');
+        }
+
+        // De forma 100% funcional, destaca a linha ativa também na tabela verdade (passo 1, mesmo miniaturizado!)
+        document.querySelectorAll('.interactive-table tbody tr').forEach(row => row.classList.remove('highlight-row'));
+        const rowId = `row-${stateA ? '1' : '0'}-${stateB ? '1' : '0'}`;
+        const activeRow = document.getElementById(rowId);
+        if (activeRow) activeRow.classList.add('highlight-row');
+    }
+
+    btnA.addEventListener('click', () => { stateA = !stateA; updateSystem(); });
+    btnB.addEventListener('click', () => { stateB = !stateB; updateSystem(); });
+
+    updateSystem(); // Inicializa o estado dos botões
+}
+
+function finishModule() {
+    alert("Parabéns! Você domina a lógica E em todas as suas vertentes físicas e lógicas.");
+}
+</script>
