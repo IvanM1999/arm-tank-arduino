@@ -3,13 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lógica de Programação</title>
+    <title>Aprenda Lógica Multidimensões</title>
     <link rel="stylesheet" href="css/global.css">
 </head>
 <body>
-    <div id="app">
-        <!-- O conteúdo será injetado aqui pelo router.js -->
-    </div>
-    <script src="js/router.js" type="module"></script>
+
+    <header id="main-header">
+        <h1>Lógica Viva</h1>
+        <p>Aprenda lógica de verdade: da matemática aos bits de forma 100% prática.</p>
+    </header>
+
+    <nav id="module-nav">
+        <button class="nav-btn" data-target="modulo-e">E (AND)</button>
+        <button class="nav-btn" data-target="modulo-ou">OU (OR)</button>
+        <button class="nav-btn" data-target="modulo-nao">NÃO (NOT)</button>
+    </nav>
+
+    <main id="app-content">
+        <section class="welcome-hero">
+            <h2>Selecione um módulo acima para começar a sua jornada.</h2>
+            <p>Cada módulo ensina a lógica sob todas as perspectivas simultaneamente.</p>
+        </section>
+    </main>
+
+    <script src="js/router.js"></script>
 </body>
 </html>
