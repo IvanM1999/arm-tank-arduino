@@ -1,54 +1,15 @@
-const features = [
-  {
-    icon: '⚡',
-    title: 'Controle de alta resposta',
-    text: 'A proposta do projeto é entregar uma experiência mais estável e rápida para sistemas embarcados e demonstrações operacionais.'
-  },
-  {
-    icon: '🧠',
-    title: 'Arquitetura modular',
-    text: 'Cada camada do ecossistema pode ser trabalhada de forma independente, facilitando evolução e integração.'
-  },
-  {
-    icon: '🔒',
-    title: 'Foco em robustez',
-    text: 'A estrutura foi pensada para lidar com ruído, falhas e mudanças de ambiente sem perder a resposta do sistema.'
-  }
-];
-
-const modules = [
-  {
-    title: 'Transmissor / Interface',
-    text: 'Recebe entradas do usuário e prepara o fluxo de controle para o restante do sistema com baixa latência.'
-  },
-  {
-    title: 'Cérebro / Core',
-    text: 'Processa decisões, compensa movimentos e organiza a lógica de execução do braço e da tração.'
-  },
-  {
-    title: 'Atuadores e laboratório',
-    text: 'Servos, motores e sensores transformam a lógica em ação física, com foco em telemetria e observação.'
-  }
-];
-
-function renderCards(containerId, items) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-
-  container.innerHTML = items
-    .map(
-      (item) => `
-        <article class="card">
-          <div class="chip">${item.icon || '●'}</div>
-          <h3>${item.title}</h3>
-          <p>${item.text}</p>
-        </article>
-      `
-    )
-    .join('');
-}
-
-renderCards('features-grid', features);
-renderCards('modules-grid', modules);
-
-document.getElementById('year').textContent = new Date().getFullYear();
+(() => {
+  'use strict';
+  const state={frame:0,running:true,sound:false,emergency:false,holdZ:false,calibrated:false,joystick:{x:0,y:0},height:10,startedAt:Date.now(),telemetry:{battery:86,tilt:2.4,temperature:31.8,pressure:1008,humidity:54,gas:.18}};
+  const $=id=>document.getElementById(id), terminal=$('terminal'), clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+  const log=(message,tag='SYS',tone='')=>{const time=new Date().toLocaleTimeString('pt-BR',{hour12:false}),line=document.createElement('div');line.className=`terminal-line ${tone}`;line.innerHTML=`<span class="time">${time}</span> <span class="tag">[${tag}]</span> ${message}`;terminal.appendChild(line);terminal.scrollTop=terminal.scrollHeight;while(terminal.children.length>40)terminal.removeChild(terminal.firstChild)};
++  const emit=(event,payload)=>window.dispatchEvent(new CustomEvent(`armtank:${event}`,{detail:payload}));
++  function setJoystick(x,y){state.joystick={x:clamp(x,-1,1),y:clamp(y,-1,1)};document.querySelector('.joystick-knob').style.transform=`translate(${state.joystick.x*51}px, ${state.joystick.y*51}px)`;$('velocity-value').textContent=String(Math.round(-state.joystick.y*100)).padStart(3,'0');$('direction-value').textContent=String(Math.round(state.joystick.x*100)).padStart(3,'0');emit('command',{type:'drive',...state.joystick})}
++  function bindJoystick(){const joystick=$('joystick');let active=false;const update=event=>{const rect=joystick.getBoundingClientRect(),point=event.touches?event.touches[0]:event;setJoystick((point.clientX-(rect.left+rect.width/2))/(rect.width/2),(point.clientY-(rect.top+rect.height/2))/(rect.height/2))};joystick.addEventListener('pointerdown',event=>{active=true;joystick.setPointerCapture(event.pointerId);update(event)});joystick.addEventListener('pointermove',event=>{if(active)update(event)});joystick.addEventListener('pointerup',()=>{active=false;setJoystick(0,0)});joystick.addEventListener('keydown',event=>{const keys={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]};if(keys[event.key]){event.preventDefault();setJoystick(...keys[event.key])}})}
++  function drawRobot(){const canvas=$('robot-canvas'),ctx=canvas.getContext('2d'),scale=canvas.width/900;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#91a671';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.strokeStyle='rgba(38,61,36,.25)';ctx.lineWidth=1;for(let x=0;x<canvas.width;x+=45*scale){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke()}for(let y=0;y<canvas.height;y+=45*scale){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke()}const t=state.frame/60,bx=450+Math.sin(t*.24)*20+state.joystick.x*20,by=335+Math.cos(t*.2)*10+state.joystick.y*18;ctx.save();ctx.translate(bx,by);ctx.rotate(-.08+state.joystick.x*.06);ctx.globalAlpha=.22;ctx.fillStyle='#263d24';ctx.fillRect(-115,35,230,35);ctx.restore();ctx.save();ctx.translate(bx,by);ctx.rotate(-.08+state.joystick.x*.06);ctx.imageSmoothingEnabled=false;ctx.fillStyle='#253b29';ctx.fillRect(-122,-27,244,76);ctx.fillStyle='#1b2e22';ctx.fillRect(-135,-14,22,57);ctx.fillRect(113,-14,22,57);ctx.fillStyle='#b5de62';ctx.fillRect(-100,-19,200,58);ctx.fillStyle='#678754';ctx.fillRect(-79,-8,158,32);ctx.fillStyle='#d4ec85';ctx.fillRect(-57,-4,83,17);ctx.fillStyle='#3a5a37';ctx.fillRect(42,-1,19,12);ctx.fillStyle='#1b2e22';for(let x=-110;x<120;x+=22)ctx.fillRect(x,47,14,9);ctx.fillStyle='#c5f05d';ctx.fillRect(-5,48,14,7);const armX=18,armY=-46,reach=62;ctx.strokeStyle='#d6ee8a';ctx.lineWidth=13;ctx.lineCap='square';ctx.beginPath();ctx.moveTo(armX,-20);ctx.lineTo(armX+5,armY);ctx.lineTo(armX+reach,armY-27);ctx.lineTo(armX+reach+35,armY-6);ctx.stroke();ctx.strokeStyle='#6c8d52';ctx.lineWidth=5;ctx.stroke();ctx.fillStyle='#f6bd58';ctx.fillRect(armX+reach+31,armY-15,18,10);ctx.fillRect(armX+reach+47,armY-9,12,7);ctx.fillStyle='#1b2e22';ctx.fillRect(-7,-30,15,12);ctx.restore();ctx.fillStyle='#e0efb5';ctx.font='11px monospace';ctx.fillText('Z 10.0 cm',35,45);ctx.fillText('X +1.24 m  Y -0.38 m',35,61);ctx.fillStyle='#f6bd58';ctx.fillText('TARGET // HEIGHT LOCK',680,515)}
++  function updateTelemetry(){const n=state.frame/60,t=state.telemetry;t.battery=clamp(t.battery-.0008,0,100);t.tilt=2.4+Math.sin(n*.7)*1.3;t.temperature=31.8+Math.sin(n*.22)*1.1;t.pressure=1008+Math.sin(n*.1)*3;t.humidity=54+Math.sin(n*.16)*3;t.gas=.18+Math.abs(Math.sin(n*.13))*.05;$('battery').textContent=Math.round(t.battery);$('battery-meter').style.width=`${t.battery}%`;$('tilt').textContent=t.tilt.toFixed(1);$('temperature').textContent=t.temperature.toFixed(1);$('temperature-meter').style.width=`${t.temperature}%`;$('pressure').textContent=Math.round(t.pressure);$('humidity').textContent=Math.round(t.humidity);$('humidity-meter').style.width=`${t.humidity}%`;$('gas').textContent=t.gas.toFixed(2);$('frame-label').textContent=String(state.frame).padStart(5,'0');$('latency-label').textContent=`${Math.round(16+Math.sin(n)*3)} ms`;const elapsed=Math.floor((Date.now()-state.startedAt)/1000);$('telemetry-clock').textContent=new Date(elapsed*1000).toISOString().slice(11,19)}
++  function calibrate(){$('calibrate-button').disabled=true;$('calibrate-button').textContent='CALIBRANDO...';$('calibration-status').textContent='LENDO GRADE 10×10';log('Sequência de referência iniciada: LDR + IMU + encoder.','CAL','good');setTimeout(()=>{state.calibrated=true;$('calibrate-button').disabled=false;$('calibrate-button').textContent='RECALIBRAR PLATAFORMA';$('calibration-status').textContent='REFERÊNCIA OK';log('Calibração concluída. Eixos X/Y/Z sincronizados.','CAL','good');emit('calibrated',{grid:'10x10cm',axes:3})},2200)}
++  function emergencyStop(){state.emergency=!state.emergency;state.running=!state.emergency;$('emergency-stop').textContent=state.emergency?'LIBERAR SISTEMA':'PARADA DE EMERGÊNCIA';$('mode-label').textContent=state.emergency?'SAFE MODE':'TELEOPERAÇÃO';log(state.emergency?'ATUADORES DESARMADOS. Posição segura aplicada.':'Controle liberado pelo operador.',state.emergency?'SAFE':'SYS',state.emergency?'warn':'good');emit('safety',{emergency:state.emergency})}
++  $('arm-height').addEventListener('input',event=>{state.height=Number(event.target.value);$('arm-height-output').textContent=`${state.height.toFixed(1)} cm`;$('height-value').textContent=state.height.toFixed(1);emit('command',{type:'set-height',z:state.height})});$('calibrate-button').addEventListener('click',calibrate);$('emergency-stop').addEventListener('click',emergencyStop);$('reset-position').addEventListener('click',()=>{setJoystick(0,0);state.height=10;$('arm-height').value=10;$('height-value').textContent='10.0';log('Pose inicial restaurada pelo operador.','POSE')});$('clear-log').addEventListener('click',()=>{terminal.innerHTML='';log('Terminal reiniciado.','SYS')});$('sound-toggle').addEventListener('click',()=>{state.sound=!state.sound;$('sound-toggle').style.color=state.sound?'var(--acid)':'';log(`Alertas sonoros ${state.sound?'ativados':'desativados'}.`,'CFG')});$('hold-z').addEventListener('click',event=>{state.holdZ=!state.holdZ;event.currentTarget.querySelector('span').textContent=state.holdZ?'ON':'OFF';log(`Eixo Z ${state.holdZ?'travado em 10.0 cm':'liberado'}.`,'KIN',state.holdZ?'good':'')});$('scan-button').addEventListener('click',()=>{log('Barramento em varredura: ESP32, Nano, 6 servos, 2 motores.','SCAN');setTimeout(()=>log('Mapa atualizado. Perfil de sucata compatível carregado.','SCAN','good'),700)});$('open-api').addEventListener('click',()=>log('API local: window.ArmTankAPI / eventos armtank:*','API','good'));
++  bindJoystick();log('Host local pronto. Aguardando comandos do operador.','BOOT','good');log('Mock telemetry ×10 online // câmera CAM-A conectada.','LINK');window.ArmTankAPI={getState:()=>structuredClone(state),command:(type,payload={})=>{emit('command',{type,...payload});log(`Comando externo recebido: ${type}.`,'API','good')},calibrate,emergencyStop,on:(event,handler)=>window.addEventListener(`armtank:${event}`,e=>handler(e.detail))};function tick(){if(state.running){state.frame+=1;drawRobot();updateTelemetry()}requestAnimationFrame(tick)}tick();$('year').textContent=new Date().getFullYear();
++})();
