@@ -1,0 +1,35 @@
+ok, crie uma apresetnação de projeto para os comando a seguir serem seguidos em turnos completos.
+
+Crie um api onde eu possa simular isso tudo dentra da pagina web dividida, onde metade apresenta uma simulação de um robo tank com braço robotico pixelado no estilo gameboy com um terminal de logs e outra com uma visualização da webpage do site, que deve apresentar controladores como um joystick simulado com tela de dados do robo, com dados mock em tempo real simulando consumo x10 da vida real, como bateria, inclinação, temperatura, gasometria, umidade, barometro, etcetera.
+
+Lembrando que este é o projeto de um robo de todo terreno, para todo tipo de missão, com auto calibração (no caso de substituição de peça ou quando feito com sucatas, para isso precisa de uma inteligencia avançada para ontem) e auto detecção no caso de ter mais de 4 servos axiais e 2 motores de esteira, controlando por dados internos onde deveria estar a posição da garra, mantendo altitue e longitudes cardinais (exemplo, posicionei a garra em 10cm de altura, o avanço e recuo devem manter o mesmo eixo de altitude Z, enquanto avança x ou y, considerando também a rotação de X, Y e Z controladas, para que o consigamos ter controles do tipo industrial e alcançar objetos que as vezes podem exigir espaços confinados).
+
+O controlador deve ser capaz de fazer controle e conexao de cameras o tempo todo e ter latencia e qualidade de imagem constantes, garantindo segurançe e fidelidade de operação, dentro do site.
+
+Como o projeto visa definir o menor custo usando sucatas e o codigo deve ser extremamente robusto e auto inteligente, devemos planejar e aplicar funções para que o robo consiga operar com qualquer condição de operação e peças.
+
+Vamos supor a hipotese a seguir:
+
+Montei o robo usando um kit de garra axial de 6 servos, 2 motores de impressora diferentes, um esp32 devkit 1 e mais um arduino nano.
+
+(Como base da calibração, eu posso construir ou imprimir uma base de calibração com quadriculados de 10*10cm e 1cm de espessura de linha e com leds e sensores ldr ou seguidores de linha prontos, o robos detecta as laituras e calibra se avanço no eixo X, assim definindo com o giroscópio se existente, sua posição no espaço.)
+
+Continuando:
+
+eu coloco o robo para andar a primeira vez, já com o codigo previamente carregado a primeira vez no esp32, ele usa protocolo de comunicação isp do arduino ou outro, detectando qual componente foi usado na placa de desenvolvimento, para transmitir e propagar e programar e controlar uma ou mais placas.
+
+Como o esp32 vai ter legado uma pagina web para exibir assim que energizar ele, o usuário vai definir uma série de parametros e corrigir caso alguns deles estejam errados na leitura do esp32. Podendo também o usuário utilizar smartphones velhos para controle de video camera, só digitando endereço ip ou host atribuido por aplicações diversas. o mesmo se for conectado uma webcam usb PlugAndPlay no esp32 com portas previamente reservadas apenas para isto.
+
+ou seja, até aqui montei um esp32, um arduino nano, 2 motores genericos e usei um smartphone, 2 leds e 2 ldr (pode ser também sensores IR compativeis de televisores). conectei ao site padrão do esp32 contido na apresentação do projeto, configurei informações e fiz a conexão completa com a camera do smartphone (também posso configurar dados recebicos caso use webacam PnP) e coloquei para calibração. O robo avança e recua na matricial impressa numa folha a4 , calibra sua posição X. Depois ele acha a primeira linha, e começa a calibrar o avanço nas rotações do eixo Z.
+
+Depois de calibrar o tanque, eu posso selecionar caso não tenha sido automático a detecção de eixos da garra, entre 4 e 6 ou mais eixos, cruzando referencias com bibliotecas que o usuário pode enviar via wifi, bluetooth, Lora ou futuramente adicionar cartões de memória ou pendrives de firmware.
+
+também seria importante ter uma comunicação usb otg com androids +4.4 para usar o termux como compartilhamento de dados, conexão com rede wifi, camera e outras funcionalidades disponiveis.
+
+o proprio esp32 vai identificar os chips conectados das outras placas e descompactar os codigos pre carregados, criar uma rede de controle, identificar quais sensores estão conectados ou registrados via site host. algo como arpanet.
+
+O esp32 deve ter um controlador host para usar mobiles como joystick ou controles de teclados abnt2 para movimentação, usar controladores Joysticks Bluetooth cmo DS4 e Xbox ou paralelos compativeis.
+
+Poder exibir dados e video via host ip (pode ser broadcast também) em qualquer tela, ou seja, pode ser visualisado em qualquer dispositivo simultaneamente, ter exibição de dados de sensores previamente ativados, no caso de baromestos, gasimetros, hidrometors, temperatura, etcetera, terminal de logs e entre outras opções.
+
+Caso haja mais possibilidade, devem ser mencionadas como implantações futuras ou faltarem para que o projeto consiga funcionar, já adiciona agora. Ou seja, mapeie APIs, Firmwares prontos, bibliotecas e repositórios existente como base de codificação para os agentes de desenvolvimento de IA
