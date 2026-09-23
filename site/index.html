@@ -3,130 +3,38 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Arm-Tank | Ecossistema Robótico de Baixa Latência</title>
-    <meta
-      name="description"
-      content="Uma apresentação comercial do projeto Arm-Tank, com foco em robótica modular, latência reduzida e controle em tempo real."
-    />
+    <meta name="theme-color" content="#111713" />
+    <title>Arm-Tank // Mission Control</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <header class="hero">
-      <nav class="nav container">
-        <a class="brand" href="#top">Arm-Tank</a>
-        <div class="nav-links">
-          <a href="#diferenciais">Diferenciais</a>
-          <a href="#modulos">Módulos</a>
-          <a href="#como-funciona">Como funciona</a>
-          <a href="#contato">Contato</a>
-        </div>
-      </nav>
-
-      <div class="container hero-grid" id="top">
-        <div class="hero-copy">
-          <p class="eyebrow">Projeto open-source • Robótica embarcada • Controle preciso</p>
-          <h1>Um ecossistema robótico pensado para performance, segurança e demonstração real.</h1>
-          <p class="lead">
-            O Arm-Tank une hardware, firmware e controle em tempo real em um projeto modular que une braço mecânico, garra manipuladora e unidade de tração com foco em baixa latência e estabilidade.
-          </p>
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="#modulos">Explorar o projeto</a>
-            <a class="btn btn-secondary" href="#contato">Quero conhecer mais</a>
-          </div>
-          <ul class="hero-points">
-            <li>Latência otimizada para controle em tempo real</li>
-            <li>Arquitetura modular e escalável</li>
-            <li>Ideal para demonstrações, laboratório e pesquisa</li>
-          </ul>
-        </div>
-
-        <div class="hero-card">
-          <div class="chip">Status • Em desenvolvimento</div>
-          <h3>O que torna o projeto especial</h3>
-          <div class="stats-grid">
-            <div>
-              <strong>3</strong>
-              <span>camadas de controle</span>
-            </div>
-            <div>
-              <strong>&lt;20ms</strong>
-              <span>latência alvo</span>
-            </div>
-            <div>
-              <strong>ESP32</strong>
-              <span>e Arduino</span>
-            </div>
-            <div>
-              <strong>Open Source</strong>
-              <span>em evolução</span>
-            </div>
-          </div>
-        </div>
-      </div>
+    <header class="topbar">
+      <div class="brand-lockup"><span class="brand-mark">AT</span><div><strong>ARM-TANK</strong><span>MISSION CONTROL / LAB 01</span></div></div>
+      <div class="topbar-status"><span class="status-dot"></span><span id="connection-label">SIMULADOR LOCAL</span><b id="latency-label">18 ms</b></div>
+      <div class="topbar-actions"><button class="icon-button" id="sound-toggle" title="Alternar alertas sonoros" aria-label="Alternar alertas sonoros">◖</button><button class="danger-button" id="emergency-stop">PARADA DE EMERGÊNCIA</button></div>
     </header>
-
-    <main>
-      <section class="section container" id="diferenciais">
-        <div class="section-heading">
-          <p class="eyebrow">Por que esse projeto chama atenção</p>
-          <h2>Mais do que um protótipo: uma base para inovação e apresentação técnica.</h2>
+    <main class="mission-grid">
+      <section class="simulation-column" aria-label="Simulação do robô">
+        <div class="panel panel-simulation">
+          <div class="panel-heading"><div><span class="kicker">SIMULAÇÃO LIVE / PIXEL CORE</span><h1>Terreno de ensaio</h1></div><div class="readout"><span>FRAME</span><strong id="frame-label">00000</strong></div></div>
+          <div class="viewport-wrap"><canvas id="robot-canvas" width="900" height="560" aria-label="Simulação pixelada do robô tanque"></canvas><div class="viewport-overlay"><span>GRID 01m</span><span id="mode-label">TELEOPERAÇÃO</span><span>CAM-A / 720p</span></div></div>
+          <div class="simulation-footer"><div class="legend"><span><i class="legend-swatch robot"></i>ROVER</span><span><i class="legend-swatch target"></i>ALVO Z</span><span><i class="legend-swatch path"></i>TRAJETÓRIA</span></div><button class="ghost-button" id="reset-position">RESETAR POSIÇÃO ↺</button></div>
         </div>
-        <div id="features-grid" class="cards-grid"></div>
-      </section>
-
-      <section class="section section-alt" id="modulos">
-        <div class="container">
-          <div class="section-heading">
-            <p class="eyebrow">Ecossistema modular</p>
-            <h2>Os blocos que compõem a experiência completa do Arm-Tank.</h2>
-          </div>
-          <div id="modules-grid" class="cards-grid"></div>
+        <div class="split-panels">
+          <section class="panel camera-panel"><div class="panel-heading compact"><div><span class="kicker">VISÃO / STREAM 01</span><h2>Percepção frontal</h2></div><span class="live-tag"><i></i>AO VIVO</span></div><div class="camera-feed"><div class="camera-reticle"></div><span class="camera-meta">USB-CAM / 1280×720 / 30 FPS</span><span class="camera-crosshair">+</span></div><div class="camera-controls"><span>QUALIDADE <b>ALTA</b></span><span>BITRATE <b>2.4 Mb/s</b></span><span>PERDA <b class="good">0.0%</b></span></div></section>
+          <section class="panel terminal-panel"><div class="panel-heading compact"><div><span class="kicker">EVENT BUS / UART + ESP-NOW</span><h2>Terminal de missão</h2></div><button class="text-button" id="clear-log">LIMPAR</button></div><div class="terminal" id="terminal" role="log" aria-live="polite"></div></section>
         </div>
       </section>
-
-      <section class="section container" id="como-funciona">
-        <div class="section-heading">
-          <p class="eyebrow">Fluxo do projeto</p>
-          <h2>Da interação humana à ação física, tudo é pensado para responder com precisão.</h2>
-        </div>
-        <div class="timeline">
-          <article>
-            <h3>1. Interface humana</h3>
-            <p>O controle remoto captura entradas e transforma movimento em comandos estáveis.</p>
-          </article>
-          <article>
-            <h3>2. Cérebro do sistema</h3>
-            <p>O coração do projeto processa as decisões, compensa deslocamentos e organiza o fluxo.</p>
-          </article>
-          <article>
-            <h3>3. Execução mecânica</h3>
-            <p>Servos, motores e tração respondem com ação física, fechando o ciclo em tempo real.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section section-cta" id="contato">
-        <div class="container cta-box">
-          <h2>Quer apresentar esse projeto de forma mais profissional?</h2>
-          <p>Esta página é uma primeira versão do kit de vendas para mostrar o valor técnico e a proposta do Arm-Tank para investidores, parceiros ou público interessado.</p>
-          <a class="btn btn-primary" href="https://github.com/IvanM1999/arm-tank-arduino" target="_blank" rel="noreferrer">Abrir repositório</a>
-        </div>
-      </section>
+      <aside class="control-column" aria-label="Controle e telemetria">
+        <section class="panel control-panel"><div class="panel-heading compact"><div><span class="kicker">INPUT / HYBRID CONTROL</span><h2>Comando manual</h2></div><span class="control-badge">ARMADO</span></div><div class="joystick-row"><div class="joystick-wrap"><div class="joystick" id="joystick" aria-label="Joystick de locomoção" role="slider" tabindex="0"><div class="joystick-ring"></div><div class="joystick-knob"></div><span class="axis-label y">Y</span><span class="axis-label x">X</span></div><span class="control-caption">TRAÇÃO / XY</span></div><div class="axis-readouts"><div><span>VELOCIDADE</span><strong id="velocity-value">000</strong><small>%</small></div><div><span>DIREÇÃO</span><strong id="direction-value">000</strong><small>°</small></div><div><span>ALTURA Z</span><strong id="height-value">10.0</strong><small>cm</small></div></div></div><div class="arm-controls"><label for="arm-height">ELEVAÇÃO DO BRAÇO <output id="arm-height-output">10.0 cm</output></label><input id="arm-height" type="range" min="0" max="30" step="0.1" value="10" /><div class="servo-grid"><button class="servo-button active" data-servo="0">S1 BASE <b>+12°</b></button><button class="servo-button" data-servo="1">S2 OMBRO <b>-04°</b></button><button class="servo-button" data-servo="2">S3 COTOVELO <b>+08°</b></button><button class="servo-button" data-servo="3">S4 PUNHO <b>+00°</b></button><button class="servo-button" data-servo="4">S5 GIRO <b>-11°</b></button><button class="servo-button" data-servo="5">S6 GARRA <b>ABERTA</b></button></div></div><div class="quick-actions"><button class="primary-button" id="calibrate-button">CALIBRAR PLATAFORMA</button><button class="secondary-button" id="hold-z">TRAVAR EIXO Z <span>OFF</span></button></div></section>
+        <section class="panel telemetry-panel"><div class="panel-heading compact"><div><span class="kicker">SENSORS / MOCK ×10</span><h2>Telemetria do chassi</h2></div><span class="telemetry-clock" id="telemetry-clock">00:00:00</span></div><div class="telemetry-grid"><div class="metric"><span>BATERIA</span><strong id="battery">86</strong><small>% / 11.8 V</small><div class="meter"><i id="battery-meter"></i></div></div><div class="metric"><span>INCLINAÇÃO</span><strong id="tilt">+2.4</strong><small>° pitch / +0.8 yaw</small><div class="sparkline"><i></i></div></div><div class="metric"><span>TEMPERATURA</span><strong id="temperature">31.8</strong><small>°C / MCU</small><div class="meter warm"><i id="temperature-meter"></i></div></div><div class="metric"><span>PRESSÃO</span><strong id="pressure">1008</strong><small>hPa / barômetro</small><div class="sparkline amber"><i></i></div></div><div class="metric"><span>UMIDADE</span><strong id="humidity">54</strong><small>% RH / ambiente</small><div class="meter"><i id="humidity-meter"></i></div></div><div class="metric"><span>GASES VOC</span><strong id="gas">0.18</strong><small>ppm / seguro</small><div class="signal-safe">● NORMAL</div></div></div></section>
+        <section class="panel discovery-panel"><div class="panel-heading compact"><div><span class="kicker">HARDWARE / AUTO-DETECT</span><h2>Mapa de módulos</h2></div><button class="scan-button" id="scan-button">SCAN ↗</button></div><div class="module-list" id="module-list"><div class="module-row"><span class="module-icon ok">✓</span><div><strong>ESP32 DevKit v1</strong><small>HOST / Wi-Fi 6 / 240 MHz</small></div><b>ONLINE</b></div><div class="module-row"><span class="module-icon ok">✓</span><div><strong>Arduino Nano</strong><small>UART / ATmega328P / 115200</small></div><b>ONLINE</b></div><div class="module-row"><span class="module-icon warn">6</span><div><strong>Servos axiais</strong><small>SG90 compatível / S1—S6</small></div><b>AUTO</b></div><div class="module-row"><span class="module-icon ok">↔</span><div><strong>Tração diferencial</strong><small>Motores M1 + M2 / ponte H</small></div><b>ONLINE</b></div></div><div class="discovery-footer"><span>CALIBRAÇÃO <b id="calibration-status">REFERÊNCIA PENDENTE</b></span><button class="text-button" id="open-api">API LOCAL ↗</button></div></section>
+      </aside>
     </main>
-
-    <footer class="footer">
-      <div class="container footer-content">
-        <p>Arm-Tank • Desenvolvido com foco em robótica embarcada e demonstração técnica.</p>
-        <p>© <span id="year"></span> DestinyServicesBR</p>
-      </div>
-    </footer>
-
+    <footer class="site-footer"><span>ARM-TANK // OPEN ROBOTICS LAB</span><span>SIMULAÇÃO DE DESENVOLVIMENTO — NÃO OPERAR HARDWARE REAL SEM FAIL-SAFE</span><span id="year"></span></footer>
     <script src="app.js"></script>
   </body>
 </html>
