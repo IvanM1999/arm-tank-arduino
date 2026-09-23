@@ -12,7 +12,7 @@ const int PIN_MOTOR_DIR = 6;
 // Constantes de Gerenciamento e Controle do Fluxo Serial UART
 const byte numChars = 40; // Buffer estendido para suportar a nova string expandida
 char receivedChars[numChars];
-boolean newData = false;
+bool newData = false;
 
 // Parâmetros de Segurança Crítica (Watchdog por Software / Fail-Safe)
 unsigned long lastPacketTime = 0;
@@ -76,65 +76,37 @@ void recvWithStartEndMarkers() {
     }
 }
 
-// Tokenização segura e conversão numérica imediata do payload
+// Só um frame completo e dentro das faixas permitidas pode atualizar o hardware.
 void parseAndExecute() {
-    if (newData == true) {
-        // Atualização imediata do Watchdog temporal do sistema
+    if (!newData) return;
+
+    int valBase;
+    int valAlcance;
+    int valElev;
+    int velChassi;
+    int dirChassi;
+    int fields = sscanf(receivedChars, "%d,%d,%d,%d,%d", &valBase, &valAlcance,
+                        &valElev, &velChassi, &dirChassi);
+    bool validFrame = fields == 5 && valBase >= 0 && valBase <= 180 &&
+                      valAlcance >= 0 && valAlcance <= 180 && valElev >= 0 &&
+                      valElev <= 180 && velChassi >= -100 && velChassi <= 100 &&
+                      dirChassi >= -100 && dirChassi <= 100;
+
+    if (validFrame) {
+        servoBase.write(valBase);
+        servoAlcance.write(valAlcance);
+        servoElevacao.write(valElev);
+
+        int leftCommand = constrain(velChassi + dirChassi, -100, 100);
+        int rightCommand = constrain(velChassi - dirChassi, -100, 100);
+        analogWrite(PIN_MOTOR_ESQ, map(leftCommand, -100, 100, 0, 255));
+        analogWrite(PIN_MOTOR_DIR, map(rightCommand, -100, 100, 0, 255));
+
         lastPacketTime = millis();
         isSafeMode = false;
-
-        char * strtokIndx;
-
-        // Token 1: Ângulo do Servo da Base (Rotação)
-        strtokIndx = strtok(receivedChars, ",");
-        if (strtokIndx != NULL) {
-            int valBase = atoi(strtokIndx);
-            if (valBase >= 0 && valBase <= 180) servoBase.write(valBase);
-        }
-        
-        // Token 2: Ângulo do Servo de Alcance (Distância)
-        strtokIndx = strtok(NULL, ",");
-        if (strtokIndx != NULL) {
-            int valAlcance = atoi(strtokIndx);
-            if (valAlcance >= 0 && valAlcance <= 180) servoAlcance.write(valAlcance);
-        }
-
-        // Token 3: Ângulo do Servo de Elevação (Calculado/Compensado pelo Cérebro)
-        strtokIndx = strtok(NULL, ",");
-        if (strtokIndx != NULL) {
-            int valElev = atoi(strtokIndx);
-            if (valElev >= 0 && valElev <= 180) servoElevacao.write(valElev);
-        }
-
-        // Token 4: Velocidade Linear do Chassi (Eixo Y do Joystick do Tanque)
-        strtokIndx = strtok(NULL, ",");
-        int velChassi = 0;
-        if (strtokIndx != NULL) {
-            velChassi = atoi(strtokIndx); // Faixa recebida: -100 a 100
-        }
-
-        // Token 5: Direção/Curva do Chassi (Eixo X do Joystick do Tanque)
-        strtokIndx = strtok(NULL, ",");
-        int dirChassi = 0;
-        if (strtokIndx != NULL) {
-            dirChassi = atoi(strtokIndx); // Faixa recebida: -100 a 100
-        }
-
-        // Misturador Cinemático de Tração Diferencial Simples (Ponte H)
-        // Converte eixos mistos em potências individuais para os motores esquerdo e direito
-        int motorEsqPwr = map(velChassi + dirChassi, -100, 100, 0, 255);
-        int motorDirPwr = map(velChassi - dirChassi, -100, 100, 0, 255);
-
-        // Restringe os valores aos limites PWM de hardware (8-bits)
-        motorEsqPwr = constrain(motorEsqPwr, 0, 255);
-        motorDirPwr = constrain(motorDirPwr, 0, 255);
-
-        // Escrita direta nos drivers da Ponte H
-        analogWrite(PIN_MOTOR_ESQ, motorEsqPwr);
-        analogWrite(PIN_MOTOR_DIR, motorDirPwr);
-        
-        newData = false; // Libera a máquina de estados serial para o próximo ciclo
     }
+
+    newData = false;
 }
 
 // Rotina preventiva de Fail-Safe não-bloqueante
@@ -146,7 +118,7 @@ void checkFailSafe() {
 }
 
 // Força o recolhimento e parada mecânica imediata do ecossistema robótico
-void ejecutarPosicaoSegura() {
+void executarPosicaoSegura() {
     servoBase.write(90);
     servoAlcance.write(90);
     servoElevacao.write(90);
