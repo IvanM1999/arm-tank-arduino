@@ -1,0 +1,4 @@
+[wokwi]
+version = 1
+firmware = "build/actuator_sim.ino.hex"
+elf = "build/actuator_sim.ino.elf"
