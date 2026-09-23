@@ -25,76 +25,72 @@ typedef struct struct_message {
 } struct_message;
 
 struct_message incomingData;
+volatile struct_message pendingData;
+volatile bool packetReady = false;
+portMUX_TYPE packetMux = portMUX_INITIALIZER_UNLOCKED;
 
 // Filtros de interpolação lógica para rastreamento suave de trajetória
 float sBase = 90.0;
 float sAlcance = 90.0;
 float sElev = 90.0;
 
-// Callback assíncrono disparado imediatamente após o recebimento do pacote RF
+// O callback só copia o payload; processamento e UART ficam fora do contexto RF.
 void OnDataRecv(const esp_now_recv_info *info, const uint8_t *incomingDataRaw, int len) {
-    if (len == sizeof(struct_message)) {
-        // Extração direta do buffer de rede para a struct estática
-        memcpy(&incomingData, incomingDataRaw, sizeof(incomingData));
+    if (len != sizeof(struct_message)) return;
 
-        int8_t tx = incomingData.tankX;
-        int8_t ty = incomingData.tankY;
-        int8_t ax = incomingData.armX;
-        int8_t ay = incomingData.armY;
+    portENTER_CRITICAL(&packetMux);
+    memcpy((void *)&pendingData, incomingDataRaw, sizeof(pendingData));
+    packetReady = true;
+    portEXIT_CRITICAL(&packetMux);
+}
 
-        // 1. Aplicação de Filtro de Zona Morta nos Eixos Analógicos
-        if (abs(tx) < DEADZONE) tx = 0;
-        if (abs(ty) < DEADZONE) ty = 0;
-        if (abs(ax) < DEADZONE) ax = 0;
-        if (abs(ay) < DEADZONE) ay = 0;
-
-        // 2. Processamento do Controle de Cota por Pressionamento Secundário
-        // Ajusta a referência da altura mantendo a última posição estável ao soltar o switch
-        if (incomingData.btnElevUp == 1) {
-            currentHeight += 0.4; // Incremento controlado por clock
-            if (currentHeight > 180.0) currentHeight = 180.0;
-        } else if (incomingData.btnElevDown == 1) {
-            currentHeight -= 0.4; // Decremento controlado por clock
-            if (currentHeight < 0.0) currentHeight = 0.0;
-        }
-
-        // 3. Mapeamento de Faixas Dinâmicas para Ângulos Absolutos (0 a 180 Graus)
-        float targetServoBase     = map(ax, -100, 100, 0, 180);
-        float targetServoAlcance  = map(ay, -100, 100, 0, 180);
-        float targetServoElevacao = currentHeight;
-
-        // 4. Modo de Compensação Cinemática (Trava de Plano Altitudinal)
-        heightLockActive = (incomingData.btnMode == 1);
-        
-        if (heightLockActive) {
-            /* 
-               Algoritmo de Acoplamento Geométrico:
-               Quando a garra avança (Alcance se afasta de 90), a gravidade e o braço mecânico 
-               deslocam a garra para baixo. O fator de acoplamento (kCompensacao) corrige isso 
-               erguendo o servo de elevação proporcionalmente para estabilizar a garra no mesmo plano horizontal.
-            */
-            float alcanceOffset = targetServoAlcance - 90.0;
-            const float kCompensacao = 0.38; // Ganho calibrado para garras estruturais multipartes
-            
-            targetServoElevacao = currentHeight - (alcanceOffset * kCompensacao);
-            targetServoElevacao = constrain(targetServoElevacao, 0.0, 180.0);
-        }
-
-        // 5. Atenuação de Sobrecarga Mecânica via Interpolação Passa-Baixas (Anti-Jitter)
-        sBase    = sBase + (targetServoBase - sBase) * SMOOTH_FACTOR;
-        sAlcance = sAlcance + (targetServoAlcance - sAlcance) * SMOOTH_FACTOR;
-        sElev    = sElev + (targetServoElevacao - sElev) * SMOOTH_FACTOR;
-
-        // 6. Serialização e Despacho Serial em Frame Delimitado Robusto
-        // Formato enviado para o Nano: <Base,Alcance,Elevacao,VelTanque,DirTanque>
-        SerialNano.print('<');
-        SerialNano.print((int)sBase);          SerialNano.print(',');
-        SerialNano.print((int)sAlcance);       SerialNano.print(',');
-        SerialNano.print((int)sElev);          SerialNano.print(',');
-        SerialNano.print((int)ty);             SerialNano.print(',');
-        SerialNano.print((int)tx);
-        SerialNano.println('>');
+void processPendingPacket() {
+    bool hasPacket = false;
+    portENTER_CRITICAL(&packetMux);
+    if (packetReady) {
+        memcpy(&incomingData, (const void *)&pendingData, sizeof(incomingData));
+        packetReady = false;
+        hasPacket = true;
     }
+    portEXIT_CRITICAL(&packetMux);
+    if (!hasPacket) return;
+
+    int8_t tx = incomingData.tankX;
+    int8_t ty = incomingData.tankY;
+    int8_t ax = incomingData.armX;
+    int8_t ay = incomingData.armY;
+
+    // 1. Aplicação de Filtro de Zona Morta nos Eixos Analógicos
+    if (abs(tx) < DEADZONE) tx = 0;
+    if (abs(ty) < DEADZONE) ty = 0;
+    if (abs(ax) < DEADZONE) ax = 0;
+    if (abs(ay) < DEADZONE) ay = 0;
+
+    // 2. Processamento do Controle de Cota por Pressionamento Secundário
+    if (incomingData.btnElevUp == 1) currentHeight = min(180.0f, currentHeight + 0.4f);
+    if (incomingData.btnElevDown == 1) currentHeight = max(0.0f, currentHeight - 0.4f);
+
+    // 3. Mapeamento de Faixas Dinâmicas para Ângulos Absolutos (0 a 180 Graus)
+    float targetServoBase = map(ax, -100, 100, 0, 180);
+    float targetServoAlcance = map(ay, -100, 100, 0, 180);
+    float targetServoElevacao = currentHeight;
+
+    // 4. Modo de Compensação Cinemática (Trava de Plano Altitudinal)
+    heightLockActive = (incomingData.btnMode == 1);
+    if (heightLockActive) {
+        float alcanceOffset = targetServoAlcance - 90.0;
+        const float kCompensacao = 0.38;
+        targetServoElevacao = constrain(currentHeight - (alcanceOffset * kCompensacao), 0.0, 180.0);
+    }
+
+    // 5. Atenuação de Sobrecarga Mecânica via Interpolação Passa-Baixas (Anti-Jitter)
+    sBase += (targetServoBase - sBase) * SMOOTH_FACTOR;
+    sAlcance += (targetServoAlcance - sAlcance) * SMOOTH_FACTOR;
+    sElev += (targetServoElevacao - sElev) * SMOOTH_FACTOR;
+
+    // 6. Formato enviado para o Nano: <Base,Alcance,Elevacao,VelTanque,DirTanque>
+    SerialNano.printf("<%d,%d,%d,%d,%d>\n", (int)sBase, (int)sAlcance,
+                      (int)sElev, (int)ty, (int)tx);
 }
 
 void setup() {
@@ -117,7 +113,6 @@ void setup() {
 }
 
 void loop() {
-    // Código orientado a interrupção. O loop permanece em sleep consciente 
-    // liberando o core do processador para priorizar os callbacks de recepção RF.
-    delay(100);
+    processPendingPacket();
+    delay(1);
 }
