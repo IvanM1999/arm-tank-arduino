@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "author": "Arm-Tank",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-arduino-nano", "id": "nano", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-servo", "id": "servoBase", "top": -120, "left": 300, "attrs": {} },
+    { "type": "wokwi-servo", "id": "servoAlcance", "top": 20, "left": 300, "attrs": {} },
+    { "type": "wokwi-servo", "id": "servoElevacao", "top": 160, "left": 300, "attrs": {} },
+    { "type": "wokwi-led", "id": "motorEsq", "top": -60, "left": 520, "attrs": { "color": "red" } },
+    { "type": "wokwi-led", "id": "motorDir", "top": 60, "left": 520, "attrs": { "color": "blue" } }
+  ],
+  "connections": [
+    [ "nano:9", "servoBase:PWM", "green", [] ],
+    [ "nano:10", "servoAlcance:PWM", "green", [] ],
+    [ "nano:11", "servoElevacao:PWM", "green", [] ],
+    [ "nano:5", "motorEsq:A", "red", [] ],
+    [ "nano:6", "motorDir:A", "blue", [] ],
+    [ "nano:GND.1", "servoBase:GND", "black", [] ],
+    [ "nano:GND.1", "servoAlcance:GND", "black", [] ],
+    [ "nano:GND.1", "servoElevacao:GND", "black", [] ],
+    [ "nano:GND.1", "motorEsq:C", "black", [] ],
+    [ "nano:GND.1", "motorDir:C", "black", [] ],
+    [ "nano:5V", "servoBase:V+", "red", [] ],
+    [ "nano:5V", "servoAlcance:V+", "red", [] ],
+    [ "nano:5V", "servoElevacao:V+", "red", [] ]
+  ]
+}
