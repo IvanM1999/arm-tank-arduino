@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2. Firmware & Código | Garra Robótica Adaptável</title>
+  <style>
+    :root {
+      --bg-primary: #0d1117; --bg-secondary: #161b22; --bg-tertiary: #21262d;
+      --border: #30363d; --text: #e6edf3; --muted: #8b949e;
+      --blue: #58a6ff; --green: #3fb950;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg-primary); color: var(--text); font-family: var(--font-sans); line-height: 1.6; }
+    header { background: var(--bg-secondary); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .nav-container { max-width: 1100px; margin: 0 auto; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .logo { font-weight: 700; font-size: 1.15rem; color: #fff; text-decoration: none; }
+    .logo span { color: var(--blue); }
+    nav { display: flex; gap: 8px; flex-wrap: wrap; }
+    nav a { color: var(--muted); text-decoration: none; padding: 6px 14px; border-radius: 6px; font-size: 0.92rem; font-weight: 500; }
+    nav a:hover, nav a.active { background: var(--bg-tertiary); color: #fff; }
+    nav a.active { border-bottom: 2px solid var(--blue); }
+    main { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+    h1 { font-size: 2rem; margin-bottom: 12px; }
+    h2 { font-size: 1.45rem; margin: 36px 0 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; color: var(--blue); }
+    p { color: var(--muted); margin-bottom: 16px; }
+    .code-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 28px; }
+    .code-top { background: var(--bg-tertiary); padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 0.85rem; }
+    .btn-copy { background: var(--bg-primary); color: var(--text); border: 1px solid var(--border); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+    .btn-copy:hover { border-color: var(--blue); color: var(--blue); }
+    pre { padding: 16px; overflow-x: auto; font-family: var(--font-mono); font-size: 0.84rem; line-height: 1.5; color: #c9d1d9; max-height: 520px; }
+    .arch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+    .arch-card { background: var(--bg-secondary); border: 1px solid var(--border); padding: 18px; border-radius: 8px; }
+    .arch-card h4 { color: var(--green); margin-bottom: 8px; }
+    .next-bar { display: flex; justify-content: space-between; margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); }
+    .btn { padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; background: var(--bg-tertiary); color: #fff; border: 1px solid var(--border); }
+    .btn-primary { background: var(--blue); color: #0d1117; border: none; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="nav-container">
+      <a href="index.html" class="logo">🤖 GarraRobótica<span>OS</span></a>
+      <nav>
+        <a href="index.html">Início</a>
+        <a href="hardware.html">1. Hardware & Pinout</a>
+        <a href="firmware.html" class="active">2. Firmware & Código</a>
+        <a href="tutorial.html">3. Tutorial Android & Wi-Fi</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>2. Códigos-Fonte & Explicação da Arquitetura</h1>
+    <p>Copie o código correspondente à sua placa. O firmware para ESP32 já contém o servidor Web e o Bluetooth BLE embutidos.</p>
+
+    <h2>Código A: ESP32-C3 e ESP32 DevKit V1 (Wi-Fi Web App + Bluetooth BLE)</h2>
+    <div class="code-box">
+      <div class="code-top">
+        <span>garra_esp32_wifi_ble.ino</span>
+        <button class="btn-copy" onclick="copiar('codeEsp', this)">Copiar Código ESP32</button>
+      </div>
+      <pre id="codeEsp">#include &lt;WiFi.h&gt;
+#include &lt;WebServer.h&gt;
+#include &lt;ESP32Servo.h&gt;
+#include &lt;Preferences.h&gt;
+#include &lt;BLEDevice.h&gt;
+#include &lt;BLEServer.h&gt;
+#include &lt;BLEUtils.h&gt;
+#include &lt;math.h&gt;
+
+// Seleção automática de pinos conforme a placa escolhida na compilação
+#if CONFIG_IDF_TARGET_ESP32C3
+  const int PINO_SERVOS[8] = {0, 1, 2, 3, 4, 5, 6, 7};
+  const int PINO_SENSE_6 = 8;
+  const int PINO_SENSE_8 = 10;
+  const char* PLACA_NOME = "ESP32-C3";
+#else
+  const int PINO_SERVOS[8] = {13, 12, 14, 27, 26, 25, 33, 32};
+  const int PINO_SENSE_6 = 18;
+  const int PINO_SENSE_8 = 19;
+  const char* PLACA_NOME = "ESP32-DevKit-V1";
+#endif
+
+// Especificações físicas do servo e medidas dos elos (em mm)
+const char* SERVO_MODELO = "MG90S_Metal";
+const int SERVO_ANG_MIN = 0;
+const int SERVO_ANG_MAX = 180;
+const int SERVO_FORCA_GRAMAS = 2200;
+
+const float L1_BASE_ALTURA = 55.0;
+const float L2_BRACO = 110.0;
+const float L3_ANTEBRACO = 110.0;
+
+// Rede Wi-Fi criada pelo próprio ESP32
+const char* AP_SSID = "Garra_Robotica_AP";
+const char* AP_PASS = "12345678";
+
+// Identificadores Bluetooth Low Energy (BLE)
+#define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+#define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
+
+Servo bracoServos[8];
+WebServer server(80);
+Preferences memoriaNVS;
+
+int qtdServosAtivos = 4;
+int posAtual[8] = {90, 90, 90, 90, 90, 90, 90, 90};
+const int MAX_PASSOS = 15;
+int totalPassosSalvos = 0;
+unsigned long ultimoTempoSerial = 0;
+
+const char INDEX_HTML[] PROGMEM = R"rawliteral(
+&lt;!DOCTYPE html&gt;&lt;html lang="pt-BR"&gt;&lt;head&gt;&lt;meta charset="UTF-8"&gt;
+&lt;meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"&gt;
+&lt;title&gt;Garra ESP32&lt;/title&gt;&lt;style&gt;
+body{font-family:sans-serif;background:#0d1117;color:#e6edf3;margin:0;padding:16px}
+h2{margin:0 0 8px;font-size:1.2rem;color:#58a6ff}
+.tel{background:#161b22;border:1px solid #30363d;padding:12px;border-radius:8px;font-family:monospace;font-size:.82rem;margin-bottom:16px;color:#3fb950}
+.card{background:#161b22;border:1px solid #30363d;padding:12px;border-radius:8px;margin-bottom:10px}
+.row{display:flex;justify-content:space-between;margin-bottom:6px}
+input[type=range]{width:100%;height:28px;accent-color:#58a6ff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+button{padding:14px;border:none;border-radius:8px;font-weight:bold;color:#fff;cursor:pointer}
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;h2&gt;🤖 Controle Digital Garra Robótica&lt;/h2&gt;
+&lt;div class="tel" id="t"&gt;Carregando...&lt;/div&gt;&lt;div id="c"&gt;&lt;/div&gt;
+&lt;div class="grid"&gt;
+&lt;button style="background:#238636" onclick="cmd('save')"&gt;💾 Gravar Ponto&lt;/button&gt;
+&lt;button style="background:#1f6feb" onclick="cmd('play')"&gt;▶️ Executar Seq.&lt;/button&gt;
+&lt;button style="background:#d29922;color:#000" onclick="cmd('home')"&gt;🎯 Reboot 90°&lt;/button&gt;
+&lt;button style="background:#da3633" onclick="cmd('clear')"&gt;🗑️ Limpar Memória&lt;/button&gt;
+&lt;/div&gt;&lt;script&gt;
+const n=["Base (S1)","Ombro (S2)","Cotovelo (S3)","Garra (S4)","Punho Pitch (S5)","Punho Roll (S6)","Aux 1 (S7)","Aux 2 (S8)"];
+let tm;function mv(i,a){document.getElementById('v'+i).innerText=a+'°';clearTimeout(tm);tm=setTimeout(()=&gt;{fetch(`/set?s=${i}&amp;a=${a}`).then(r=&gt;r.text()).then(x=&gt;document.getElementById('t').innerText=x)},25)}
+function cmd(c){fetch(`/cmd?c=${c}`).then(r=&gt;r.text()).then(x=&gt;{document.getElementById('t').innerText=x;if(c=='home'||c=='play')load()})}
+function load(){fetch('/status').then(r=&gt;r.json()).then(d=&gt;{let h='';for(let i=0;i&lt;d.qtd;i++)h+=`&lt;div class="card"&gt;&lt;div class="row"&gt;&lt;span&gt;${n[i]}&lt;/span&gt;&lt;strong id="v${i}"&gt;${d.pos[i]}°&lt;/strong&gt;&lt;/div&gt;&lt;input type="range" min="0" max="180" value="${d.pos[i]}" oninput="mv(${i},this.value)"&gt;&lt;/div&gt;`;document.getElementById('c').innerHTML=h;document.getElementById('t').innerText=d.telemetria})}
+window.onload=load;&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;
+)rawliteral";
+
+class MeuBLECallback: public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *pCharacteristic) {
+    String rx = pCharacteristic-&gt;getValue().c_str();
+    rx.trim();
+    if (rx == "HOME") resetarPara90();
+    else if (rx.startsWith("S")) {
+      int sep = rx.indexOf(':');
+      if (sep &gt; 0) {
+        int idx = rx.substring(1, sep).toInt();
+        int ang = constrain(rx.substring(sep + 1).toInt(), 0, 180);
+        if (idx &gt;= 0 &amp;&amp; idx &lt; qtdServosAtivos) {
+          posAtual[idx] = ang;
+          bracoServos[idx].write(ang);
+        }
+      }
+    }
+  }
+};
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(PINO_SENSE_6, INPUT_PULLUP);
+  pinMode(PINO_SENSE_8, INPUT_PULLUP);
+
+  if (digitalRead(PINO_SENSE_8) == LOW) qtdServosAtivos = 8;
+  else if (digitalRead(PINO_SENSE_6) == LOW) qtdServosAtivos = 6;
+  else qtdServosAtivos = 4;
+
+  memoriaNVS.begin("garra_robot", false);
+  totalPassosSalvos = memoriaNVS.getInt("total", 0);
+
+  ESP32PWM::allocateTimer(0);
+  ESP32PWM::allocateTimer(1);
+  for (int i = 0; i &lt; qtdServosAtivos; i++) {
+    bracoServos[i].setPeriodHertz(50);
+    bracoServos[i].attach(PINO_SERVOS[i], 500, 2400);
+    bracoServos[i].write(90);
+    posAtual[i] = 90;
+    delay(150);
+  }
+
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP(AP_SSID, AP_PASS);
+
+  BLEDevice::init("Garra_BLE_Control");
+  BLEServer *pServer = BLEDevice::createServer();
+  BLEService *pService = pServer-&gt;createService(SERVICE_UUID);
+  BLECharacteristic *pChar = pService-&gt;createCharacteristic(CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+  pChar-&gt;setCallbacks(new MeuBLECallback());
+  pService-&gt;start();
+  BLEDevice::getAdvertising()-&gt;start();
+
+  server.on("/", []() { server.send_P(200, "text/html", INDEX_HTML); });
+  server.on("/status", []() {
+    String j = "{\"qtd\":" + String(qtdServosAtivos) + ",\"pos\":[";
+    for (int i = 0; i &lt; qtdServosAtivos; i++) j += String(posAtual[i]) + (i &lt; qtdServosAtivos - 1 ? "," : "");
+    j += "],\"telemetria\":\"" + gerarTelemetria() + "\"}";
+    server.send(200, "application/json", j);
+  });
+  server.on("/set", []() {
+    int s = server.arg("s").toInt();
+    int a = constrain(server.arg("a").toInt(), 0, 180);
+    if (s &gt;= 0 &amp;&amp; s &lt; qtdServosAtivos) { posAtual[s] = a; bracoServos[s].write(a); }
+    server.send(200, "text/plain", gerarTelemetria());
+  });
+  server.on("/cmd", []() {
+    String c = server.arg("c");
+    if (c == "home") resetarPara90();
+    else if (c == "save" &amp;&amp; totalPassosSalvos &lt; MAX_PASSOS) {
+      for (int i = 0; i &lt; 8; i++) memoriaNVS.putInt(("p" + String(totalPassosSalvos) + "s" + String(i)).c_str(), posAtual[i]);
+      memoriaNVS.putInt("total", ++totalPassosSalvos);
+    } else if (c == "play") executarSeq();
+    else if (c == "clear") { totalPassosSalvos = 0; memoriaNVS.putInt("total", 0); }
+    server.send(200, "text/plain", gerarTelemetria());
+  });
+  server.begin();
+}
+
+void loop() {
+  server.handleClient();
+  if (millis() - ultimoTempoSerial &gt;= 500) {
+    ultimoTempoSerial = millis();
+    Serial.println(gerarTelemetria());
+  }
+}
+
+void resetarPara90() {
+  for (int i = 0; i &lt; qtdServosAtivos; i++) { posAtual[i] = 90; bracoServos[i].write(90); delay(80); }
+}
+
+void executarSeq() {
+  for (int p = 0; p &lt; totalPassosSalvos; p++) {
+    bool mov = true;
+    while (mov) {
+      mov = false;
+      for (int i = 0; i &lt; qtdServosAtivos; i++) {
+        int alvo = memoriaNVS.getInt(("p" + String(p) + "s" + String(i)).c_str(), 90);
+        if (posAtual[i] != alvo) { posAtual[i] += (alvo &gt; posAtual[i]) ? 1 : -1; bracoServos[i].write(posAtual[i]); mov = true; }
+      }
+      delay(15);
+    }
+    delay(350);
+  }
+}
+
+String gerarTelemetria() {
+  float rMax = L2_BRACO + L3_ANTEBRACO;
+  float rO = radians(posAtual[1]), rC = radians(posAtual[2] - 90.0);
+  float alt = max(0.0f, L1_BASE_ALTURA + L2_BRACO * sin(rO) + L3_ANTEBRACO * sin(rO + rC));
+  float domo = abs(L2_BRACO * cos(rO) + L3_ANTEBRACO * cos(rO + rC));
+  String out = String(PLACA_NOME) + " | servo:" + String(SERVO_MODELO) + " ang:0-180 carga:" + String(SERVO_FORCA_GRAMAS) + "g | Alt:" + String(alt, 1) + "mm Domo:" + String(domo, 1) + "/" + String(rMax, 0) + "mm | Mem:" + String(totalPassosSalvos) + " | [";
+  for (int i = 0; i &lt; qtdServosAtivos; i++) out += "S" + String(i + 1) + ":" + String(posAtual[i]) + (i &lt; qtdServosAtivos - 1 ? " " : "");
+  return out + "]";
+}</pre>
+    </div>
+
+    <h2>Como Cada Parte do Código Funciona</h2>
+    <div class="arch-grid">
+      <div class="arch-card">
+        <h4>1. Diretiva #if CONFIG_IDF_TARGET_ESP32C3</h4>
+        <p>Identifica automaticamente no momento da compilação se você selecionou o ESP32-C3 ou o DevKit V1, evitando conflitos com o pino de boot (GPIO 9) do C3.</p>
+      </div>
+      <div class="arch-card">
+        <h4>2. WiFi.softAP() & WebServer</h4>
+        <p>Liga o rádio Wi-Fi em modo Ponto de Acesso (roteador próprio), servindo a interface HTML armazenada na memória Flash (<code>PROGMEM</code>) sem gastar memória RAM.</p>
+      </div>
+      <div class="arch-card">
+        <h4>3. BLEDevice & Callbacks</h4>
+        <p>Ativa simultaneamente o Bluetooth Low Energy. Quando o smartphone envia comandos como <code>S0:45</code> ou <code>HOME</code>, o evento <code>onWrite</code> movimenta o eixo instantaneamente.</p>
+      </div>
+      <div class="arch-card">
+        <h4>4. Memória NVS (Preferences)</h4>
+        <p>Substitui a antiga EEPROM por pares chave-valor na memória Flash do ESP32, preservando até 15 passos completos mesmo após cortes de energia.</p>
+      </div>
+    </div>
+
+    <div class="next-bar">
+      <a href="hardware.html" class="btn">← 1. Hardware & Pinout</a>
+      <a href="tutorial.html" class="btn btn-primary">Próximo: 3. Tutorial Android & Wi-Fi →</a>
+    </div>
+  </main>
+
+  <script>
+    function copiar(id, btn) {
+      navigator.clipboard.writeText(document.getElementById(id).innerText).then(() => {
+        const orig = btn.innerText;
+        btn.innerText = "Copiado!";
+        setTimeout(() => btn.innerText = orig, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1. Hardware & Pinout | Garra Robótica Adaptável</title>
+  <style>
+    :root {
+      --bg-primary: #0d1117; --bg-secondary: #161b22; --bg-tertiary: #21262d;
+      --border: #30363d; --text: #e6edf3; --muted: #8b949e;
+      --blue: #58a6ff; --green: #3fb950; --amber: #d29922; --red: #f85149;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg-primary); color: var(--text); font-family: var(--font-sans); line-height: 1.6; }
+    header { background: var(--bg-secondary); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .nav-container { max-width: 1100px; margin: 0 auto; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .logo { font-weight: 700; font-size: 1.15rem; color: #fff; text-decoration: none; }
+    .logo span { color: var(--blue); }
+    nav { display: flex; gap: 8px; flex-wrap: wrap; }
+    nav a { color: var(--muted); text-decoration: none; padding: 6px 14px; border-radius: 6px; font-size: 0.92rem; font-weight: 500; }
+    nav a:hover, nav a.active { background: var(--bg-tertiary); color: #fff; }
+    nav a.active { border-bottom: 2px solid var(--blue); }
+    main { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+    h1 { font-size: 2rem; margin-bottom: 12px; }
+    h2 { font-size: 1.45rem; margin: 36px 0 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; color: var(--blue); }
+    p { color: var(--muted); margin-bottom: 16px; }
+    .alert-danger { background: rgba(248, 81, 73, 0.12); border-left: 4px solid var(--red); padding: 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+    .alert-danger strong { color: var(--red); }
+    table { width: 100%; border-collapse: collapse; background: var(--bg-secondary); border-radius: 8px; overflow: hidden; margin-bottom: 24px; font-size: 0.92rem; }
+    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: var(--bg-tertiary); color: #fff; }
+    code { background: rgba(88, 166, 255, 0.15); color: var(--blue); padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); }
+    .bom-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .bom-card { background: var(--bg-secondary); border: 1px solid var(--border); padding: 18px; border-radius: 8px; }
+    .bom-card h4 { color: #fff; margin-bottom: 6px; }
+    .next-bar { display: flex; justify-content: space-between; margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); }
+    .btn { padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; background: var(--bg-tertiary); color: #fff; border: 1px solid var(--border); }
+    .btn-primary { background: var(--blue); color: #0d1117; border: none; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="nav-container">
+      <a href="index.html" class="logo">🤖 GarraRobótica<span>OS</span></a>
+      <nav>
+        <a href="index.html">Início</a>
+        <a href="hardware.html" class="active">1. Hardware & Pinout</a>
+        <a href="firmware.html">2. Firmware & Código</a>
+        <a href="tutorial.html">3. Tutorial Android & Wi-Fi</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>1. Montagem de Hardware & Diagrama de Pinos</h1>
+    <p>Este guia cobre tanto a versão sem fio (<strong>ESP32-C3</strong> e <strong>ESP32 DevKit V1</strong>) quanto a versão cabeada com joysticks físicos (<strong>Arduino Nano</strong>).</p>
+
+    <div class="alert-danger">
+      <strong>⚠️ REGRA DE OURO DA ALIMENTAÇÃO (LEIA ANTES DE LIGAR):</strong><br/>
+      Servos motores consomem picos de 500mA a 900mA cada quando se movimentam. Nunca ligue o fio vermelho (VCC) dos servos no pino <code>5V</code> ou <code>3V3</code> da placa microcontroladora. Use uma <strong>fonte externa de 5V a 6V (mínimo 3A)</strong> dedicada aos servos e conecte o <strong>GND da fonte ao GND da placa</strong> (terra comum).
+    </div>
+
+    <h2>Lista de Materiais (BOM)</h2>
+    <div class="bom-grid">
+      <div class="bom-card">
+        <h4>1. Microcontrolador</h4>
+        <p>ESP32-C3 SuperMini (recomendado para Wi-Fi/BLE compacto), ESP32 DevKit V1 ou Arduino Nano.</p>
+      </div>
+      <div class="bom-card">
+        <h4>2. Atuadores (4, 6 ou 8x)</h4>
+        <p>Micro Servos SG90 (9g, 1.8kg.cm) ou MG90S (engrenagem metálica, 2.2kg.cm).</p>
+      </div>
+      <div class="bom-card">
+        <h4>3. Fonte de Energia</h4>
+        <p>Fonte chaveada 5V 3A/5A ou regulador Step-Down LM2596 / UBEC alimentado por bateria LiPo 2S.</p>
+      </div>
+      <div class="bom-card">
+        <h4>4. Jumpers de Seleção</h4>
+        <p>Fios Dupont fêmea-fêmea para aterrar os pinos de detecção (Sense) caso use 6 ou 8 servos.</p>
+      </div>
+    </div>
+
+    <h2>Tabela Unificada de Pinos (Pinout)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Eixo / Função</th>
+          <th>ESP32-C3 SuperMini</th>
+          <th>ESP32 DevKit V1</th>
+          <th>Arduino Nano</th>
+          <th>Ativo em qual modo?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Servo 1 (Base)</strong></td><td><code>GPIO 0</code></td><td><code>GPIO 13</code></td><td><code>D2</code></td><td>4, 6 e 8 Servos</td></tr>
+        <tr><td><strong>Servo 2 (Ombro)</strong></td><td><code>GPIO 1</code></td><td><code>GPIO 12</code></td><td><code>D3</code></td><td>4, 6 e 8 Servos (Cálculo Altura)</td></tr>
+        <tr><td><strong>Servo 3 (Cotovelo)</strong></td><td><code>GPIO 2</code></td><td><code>GPIO 14</code></td><td><code>D4</code></td><td>4, 6 e 8 Servos (Cálculo Altura)</td></tr>
+        <tr><td><strong>Servo 4 (Garra)</strong></td><td><code>GPIO 3</code></td><td><code>GPIO 27</code></td><td><code>D5</code></td><td>4, 6 e 8 Servos</td></tr>
+        <tr><td><strong>Servo 5 (Punho Pitch)</strong></td><td><code>GPIO 4</code></td><td><code>GPIO 26</code></td><td><code>D6</code></td><td>Apenas 6 e 8 Servos</td></tr>
+        <tr><td><strong>Servo 6 (Punho Roll)</strong></td><td><code>GPIO 5</code></td><td><code>GPIO 25</code></td><td><code>D7</code></td><td>Apenas 6 e 8 Servos</td></tr>
+        <tr><td><strong>Servo 7 (Auxiliar 1)</strong></td><td><code>GPIO 6</code></td><td><code>GPIO 33</code></td><td><code>D8</code></td><td>Apenas 8 Servos</td></tr>
+        <tr><td><strong>Servo 8 (Auxiliar 2)</strong></td><td><code>GPIO 7</code></td><td><code>GPIO 32</code></td><td><code>D9</code></td><td>Apenas 8 Servos</td></tr>
+        <tr><td><strong>Sense 6 Servos</strong></td><td><code>GPIO 8</code> → GND</td><td><code>GPIO 18</code> → GND</td><td><code>D11</code> → GND</td><td>Ligar ao GND para 6 servos</td></tr>
+        <tr><td><strong>Sense 8 Servos</strong></td><td><code>GPIO 10</code> → GND</td><td><code>GPIO 19</code> → GND</td><td><code>D12</code> → GND</td><td>Ligar ao GND para 8 servos</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Como Funciona a Auto-Detecção de Eixos?</h2>
+    <p>
+      Servos PWM comuns não enviam sinal de volta para o microcontrolador. Para que o firmware saiba exatamente se você montou uma garra de <strong>4, 6 ou 8 motores</strong> sem precisar editar o código, ativamos resistores internos de <code>INPUT_PULLUP</code> nos pinos de detecção:
+    </p>
+    <ul style="color: var(--muted); margin-left: 20px; line-height: 1.9;">
+      <li><strong>Modo 4 Servos (Padrão):</strong> Deixe os pinos <em>Sense 6</em> e <em>Sense 8</em> desconectados.</li>
+      <li><strong>Modo 6 Servos:</strong> Conecte um jumper do pino <em>Sense 6</em> diretamente ao <strong>GND</strong>.</li>
+      <li><strong>Modo 8 Servos:</strong> Conecte um jumper do pino <em>Sense 8</em> diretamente ao <strong>GND</strong>.</li>
+    </ul>
+
+    <div class="next-bar">
+      <a href="index.html" class="btn">← Voltar ao Início</a>
+      <a href="firmware.html" class="btn btn-primary">Próximo: Firmware & Código →</a>
+    </div>
+  </main>
+
+</body>
+</html>
